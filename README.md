@@ -56,6 +56,7 @@ RNFS.readDir('/', RNFS.MainBundle)
 ```
 
 ### File creation
+#### Write Text Data
 
 ```javascript
 // require the module
@@ -64,16 +65,36 @@ var RNFS = require('react-native-fs');
 // create a path you want to write to
 var path = RNFS.DocumentDirectoryPath + '/test.txt';
 
-// write the file
-RNFS.writeFile(path, 'Lorem ipsum dolor sit amet')
+// write text file
+RNFS.writeFile(path, 'Lorem ipsum dolor sit amet', false)
   .then((success) => {
     console.log('FILE WRITTEN!');
   })
   .catch((err) => {
     console.log(err.message);
   });
-
 ```
+
+#### Write Binary Data
+
+```javascript
+// require the module
+var RNFS = require('react-native-fs');
+
+// create a path you want to write to
+var path = RNFS.DocumentDirectoryPath + '/test.data';
+
+// pass base64 encoded string and set `shouldDecode` flag to `true`
+// so that the data will be decoded and written as binary data to file
+RNFS.writeFile(path, 'TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQK', true)
+  .then((success) => {
+    console.log('FILE WRITTEN!');
+  })
+  .catch((err) => {
+    console.log(err.message);
+  });
+```
+
 
 ### File deletion
 ```javascript
@@ -127,15 +148,23 @@ The promise resolves with an object with the following properties:
 `isFile` (`Function`) - Returns true when the item is a file  
 `isDirectory` (`Function`) - Returns true when the item is a directory
 
-### `promise readFile(path, shouldDecode)`
+### `promise readFile(path, shouldEncode)`
 
-Reads the file at `path` and - by default - decodes the transferred base64 string. If `shouldDecode` is `false`, the base64 encoded string is returned
+Reads the file at `path`.
+
+If reading binary file, set `shouldEncode` to `true`, and the base64 encoded string will be returned. You might want to decode the base64 string your self.
+
+If reading text file, set `shouldEncode` to `false`, and the raw text content of the file will be returned.
 
 Note: you will take quite a performance hit if you are reading big files
 
-### `promise writeFile(filepath, contents [, options])`
+### `promise writeFile(filepath, contents, shouldDecode [, options])`
 
 Write the `contents` to `filepath`. `options` optionally takes an object specifying the file's properties, like mode etc.
+
+When writing `contents` as text to file, set `shouldDecode` to `false`.
+
+When passing base64 encoded string as `contents` and write binary data to file, set `shouldDecode` to `true`.
 
 The promise resolves with a boolean.
 

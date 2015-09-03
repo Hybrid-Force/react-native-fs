@@ -20,7 +20,6 @@
   "author": "Johannes Lumpe <johannes@lum.pe> (https://github.com/johanneslumpe)",
   "license": "MIT",
   "dependencies": {
-    "base-64": "^0.1.0",
     "bluebird": "^2.9.25"
   },
   "devDependencies": {

@@ -2,7 +2,6 @@
 
 var RNFSManager = require('NativeModules').RNFSManager;
 var Promise = require('bluebird');
-var base64 = require('base-64');
 
 var _readDir = Promise.promisify(RNFSManager.readDir);
 var _stat = Promise.promisify(RNFSManager.stat);
@@ -46,20 +45,13 @@ var RNFS = {
       .catch(convertError);
   },
 
-  readFile(filepath, shouldDecode) {
-    var p = _readFile(filepath);
-
-    if (shouldDecode !== false) {
-      p = p.then((data) => {
-        return base64.decode(data);
-      });
-    }
-
-    return p.catch(convertError);
+  readFile(filepath, shouldEncode) {
+    return _readFile(filepath, !!shouldEncode)
+      .catch(convertError);
   },
 
-  writeFile(filepath, contents, options) {
-    return _writeFile(filepath, base64.encode(contents), options)
+  writeFile(filepath, contents, shouldDecode, attributes) {
+    return _writeFile(filepath, contents, !!shouldDecode, attributes)
       .catch(convertError);
   },
 

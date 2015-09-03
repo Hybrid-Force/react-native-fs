@@ -76,11 +76,17 @@ RCT_EXPORT_METHOD(stat:(NSString *)filepath
 }
 
 RCT_EXPORT_METHOD(writeFile:(NSString *)filepath
-                  contents:(NSString *)base64Content
+                  contents:(NSString *)contents
+                  shouldDecode:(BOOL)shouldDecode
                   attributes:(NSDictionary *)attributes
                   callback:(RCTResponseSenderBlock)callback)
 {
-  NSData *data = [[NSData alloc] initWithBase64EncodedString:base64Content options:NSDataBase64DecodingIgnoreUnknownCharacters];
+  NSData *data = nil;
+  if (shouldDecode) {
+    data = [[NSData alloc] initWithBase64EncodedString:contents options:NSDataBase64DecodingIgnoreUnknownCharacters];
+  } else {
+    data = [contents dataUsingEncoding:NSUTF8StringEncoding];
+  }
   BOOL success = [[NSFileManager defaultManager] createFileAtPath:filepath contents:data attributes:attributes];
 
   if (!success) {
@@ -110,16 +116,22 @@ RCT_EXPORT_METHOD(unlink:(NSString*)filepath
 }
 
 RCT_EXPORT_METHOD(readFile:(NSString *)filepath
+                  shouldEncode:(BOOL)shouldEncode
                   callback:(RCTResponseSenderBlock)callback)
 {
-  NSData *content = [[NSFileManager defaultManager] contentsAtPath:filepath];
-  NSString *base64Content = [content base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
+  NSData *data = [[NSFileManager defaultManager] contentsAtPath:filepath];
+  NSString *content;
+  if (shouldEncode) {
+    content = [data base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
+  } else {
+    content = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+  }
 
-  if (!base64Content) {
+  if (!content) {
     return callback(@[[NSString stringWithFormat:@"Could not read file at path %@", filepath]]);
   }
 
-  callback(@[[NSNull null], base64Content]);
+  callback(@[[NSNull null], content]);
 }
 
 RCT_EXPORT_METHOD(pathForBundle:(NSString *)bundleNamed
@@ -132,7 +144,7 @@ RCT_EXPORT_METHOD(pathForBundle:(NSString *)bundleNamed
         bundle = [NSBundle bundleForClass:NSClassFromString(bundleNamed)];
         path = bundle.bundlePath;
     }
-    
+
     if (!bundle.isLoaded) {
         [bundle load];
     }
